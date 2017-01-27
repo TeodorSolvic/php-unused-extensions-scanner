@@ -45,6 +45,7 @@ class ExtensionsScanner
      */
     public function findUnusedExts($path)
     {
+        $extList = [];
         // Validate path
         if (!file_exists($path) || !is_dir($path))
         {
@@ -57,6 +58,7 @@ class ExtensionsScanner
         // Extract keywords from the php-extensions (names of classes, functions and constants)
         foreach ($exts as $ext)
         {
+
             if (in_array(strtolower($ext), $this->getSkipExtensions()))
             {
                 continue;
@@ -76,6 +78,7 @@ class ExtensionsScanner
 
         // List files from project directory
         $objects = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path), RecursiveIteratorIterator::SELF_FIRST);
+        /** @var SplFileObject $object */
         foreach ($objects as $object)
         {
             if ($object->isFile())
@@ -95,10 +98,9 @@ class ExtensionsScanner
                         {
                             if (stripos($temp, $keyword) !== FALSE)
                             {
+                                $extList[$ext][$keyword][$object->getFilename()]=true;
                                 // Keyword found - this extension is used
                                 //echo "Extension $ext is used\n";
-                                unset($exts_keywords[$ext]);
-                                break;
                             }
                         }
                     }
@@ -109,8 +111,9 @@ class ExtensionsScanner
                     }
                 }
             }
-        }
 
+        }
+        file_put_contents('test.json',json_encode($extList));
         return array_keys($exts_keywords);
     }
 }
